@@ -1,56 +1,111 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Bouncing Ball Game for Children</title>
+    <title>Bouncing Ball Game</title>
     <style>
-        body {
-            text-align: center;
-            font-family: Arial, sans-serif;
-        }
-        canvas {
-            border: 3px solid #000;
-            background-color: #e0f7fa;
-        }
-        h1 {
-            color: #00796b;
+        body { font-family: Arial, sans-serif; text-align: center; background: #eef; }
+        canvas { border: 2px solid #444; background: #fff; display: block; margin: 20px auto; }
+        #controls { margin-top: 10px; }
+        button, input[type=range] {
+            padding: 8px 15px;
+            margin: 5px;
+            font-size: 16px;
         }
     </style>
 </head>
 <body>
-    <h1>Bouncing Ball Game</h1>
-    <canvas id="gameCanvas" width="500" height="400"></canvas>
 
-    <script>
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
+<h1>Bouncing Ball Game</h1>
+<canvas id="ballCanvas" width="500" height="300"></canvas>
 
-        let x = canvas.width / 2;
-        let y = canvas.height / 2;
-        let dx = 2;
-        let dy = 3;
-        let radius = 20;
+<div id="controls">
+    <button onclick="startGame()">Start</button>
+    <button onclick="pauseGame()">Pause</button>
+    <button onclick="resetGame()">Reset</button>
+    <label>
+        Speed:
+        <input type="range" id="speedControl" min="1" max="20" value="5" onchange="changeSpeed(this.value)">
+    </label>
+</div>
 
-        function drawBall() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.beginPath();
-            ctx.arc(x, y, radius, 0, Math.PI * 2);
-            ctx.fillStyle = "#ff4081";
-            ctx.fill();
-            ctx.closePath();
+<p>Use arrow keys (↑ ↓ ← →) to control the ball manually</p>
 
-            if (x + dx > canvas.width - radius || x + dx < radius) {
-                dx = -dx;
-            }
-            if (y + dy > canvas.height - radius || y + dy < radius) {
-                dy = -dy;
-            }
+<script>
+    const canvas = document.getElementById('ballCanvas');
+    const ctx = canvas.getContext('2d');
 
+    let x = canvas.width / 2;
+    let y = canvas.height / 2;
+    let dx = 2;
+    let dy = -2;
+    let radius = 15;
+    let interval = null;
+    let speed = 5;
+    let manualControl = false;
+
+    function drawBall() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = "#0095DD";
+        ctx.fill();
+        ctx.closePath();
+
+        if (!manualControl) {
             x += dx;
             y += dy;
-        }
 
-        setInterval(drawBall, 20);
-    </script>
+            if (x + dx > canvas.width - radius || x + dx < radius) dx = -dx;
+            if (y + dy > canvas.height - radius || y + dy < radius) dy = -dy;
+        }
+    }
+
+    function startGame() {
+        manualControl = false;
+        if (!interval) {
+            interval = setInterval(drawBall, 1000 / speed);
+        }
+    }
+
+    function pauseGame() {
+        clearInterval(interval);
+        interval = null;
+    }
+
+    function resetGame() {
+        pauseGame();
+        x = canvas.width / 2;
+        y = canvas.height / 2;
+        dx = 2;
+        dy = -2;
+        manualControl = false;
+        drawBall();
+    }
+
+    function changeSpeed(val) {
+        speed = parseInt(val);
+        if (interval) {
+            pauseGame();
+            startGame();
+        }
+    }
+
+    // Manual control with arrow keys
+    document.addEventListener('keydown', (e) => {
+        manualControl = true;
+        switch (e.key) {
+            case 'ArrowUp': y -= 10; break;
+            case 'ArrowDown': y += 10; break;
+            case 'ArrowLeft': x -= 10; break;
+            case 'ArrowRight': x += 10; break;
+        }
+        drawBall();
+    });
+
+    // Initial draw
+    drawBall();
+</script>
+
 </body>
 </html>
